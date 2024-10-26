@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Trading App</title>
+</head>
+<body>
+  <h1>Live Bitcoin Price: $<%= livePrice %></h1>
+
+  <!-- User Form -->
+  <form action="/users" method="POST">
+    <input type="text" name="username" placeholder="Enter Username" required>
+    <button type="submit">Create User</button>
+  </form>
+
+  <!-- Trade Form -->
+  <h2>Make a Trade</h2>
+  <form action="/trade" method="POST">
+    <select name="userId">
+      <% users.forEach(user => { %>
+        <option value="<%= user.id %>"><%= user.username %></option>
+      <% }) %>
+    </select>
+    <button type="submit" name="orderType" value="buy">Buy</button>
+    <button type="submit" name="orderType" value="sell">Sell</button>
+  </form>
+
+  <!-- Orders -->
+  <h2>Open Orders</h2>
+  <ul>
+    <% orders.forEach(order => { %>
+      <li>
+        User: <%= order.username %>, Type: <%= order.orderType %>, Price: $<%= order.price %>, Time: <%= order.time %>, Status: <%= order.status %>
+        <% if (order.status === 'open') { %>
+          <form action="/close-order/<%= order.id %>" method="POST">
+            <button type="submit">Close Order</button>
+          </form>
+        <% } else { %>
+          - Result: <%= order.result %>
+        <% } %>
+      </li>
+    <% }) %>
+  </ul>
+</body>
+</html>

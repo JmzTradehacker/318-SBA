@@ -1,6 +1,6 @@
 # Welcome to TradePal 🎉
 
-**TradePal** is built with personality and simplicity at its core! Our goal? To make trading fun, accessible, and hassle-free. Here’s what this MVP can do for you:
+**TradePal** is built with personality and simplicity at its core! Our goal? To make trading fun, accessible, and hassle-free. Here’s what **TradePal** can do for you:
 
 ---
 
