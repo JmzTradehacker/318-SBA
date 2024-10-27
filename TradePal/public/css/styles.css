@@ -1,0 +1,128 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #1a1a1a; /* Dark background */
+    color: #e0e0e0;            /* Light text */
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-direction: column;
+    padding: 3%;
+}
+
+.container {
+    max-width: 800px;
+    width: 100%;
+    padding: 20px;
+    background-color: #2b2b2b; /* Slightly lighter dark background */
+    border-radius: 8px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Headings */
+h1, h2 {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    color: #ffffff;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+/* Forms */
+form {
+    margin: 16px 0;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-direction: row;
+    padding: 0 30% 0 30%;
+    gap: 12px;
+}
+
+input[type="text"] {
+    padding: 10px;
+    font-size: 1rem;
+    background-color: #333;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #e0e0e0;
+}
+
+button {
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #3a7cff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0053ff;
+}
+
+button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
+
+/* Select dropdown */
+select {
+    padding: 10px;
+    font-size: 1rem;
+    background-color: #333;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #e0e0e0;
+}
+
+/* Lists */
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 12px;
+}
+
+li {
+    padding: 12px;
+    margin: 8px 0;
+    background-color: #333;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+li span {
+    color: #bbb;
+}
+
+/* Order details */
+.order-detail {
+    font-size: 0.9rem;
+    color: #ccc;
+}
+
+.order-profit {
+    color: #4caf50; /* Green for profit */
+    font-weight: bold;
+}
+
+.order-loss {
+    color: #f44336; /* Red for loss */
+    font-weight: bold;
+}
+
+.order-open {
+    color: #ffeb3b; /* Yellow for open orders */
+    font-weight: bold;
+}

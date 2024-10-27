@@ -4,11 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crypto Trading App</title>
+  <link rel="stylesheet" href="./css/styles.css">
 </head>
 <body>
   <h1>Live Bitcoin Price: $<%= livePrice %></h1>
 
   <!-- User Form -->
+  <h2>Create a New User</h2>
   <form action="/users" method="POST">
     <input type="text" name="username" placeholder="Enter Username" required>
     <button type="submit">Create User</button>
@@ -16,7 +18,7 @@
 
   <!-- Trade Form -->
   <h2>Make a Trade</h2>
-  <form action="/trade" method="POST">
+  <form action="/trades/trade" method="POST">
     <select name="userId">
       <% users.forEach(user => { %>
         <option value="<%= user.id %>"><%= user.username %></option>
@@ -33,7 +35,7 @@
       <li>
         User: <%= order.username %>, Type: <%= order.orderType %>, Price: $<%= order.price %>, Time: <%= order.time %>, Status: <%= order.status %>
         <% if (order.status === 'open') { %>
-          <form action="/close-order/<%= order.id %>" method="POST">
+          <form action="/trades/close-order/<%= order.id %>" method="POST">
             <button type="submit">Close Order</button>
           </form>
         <% } else { %>

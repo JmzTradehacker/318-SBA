@@ -1,8 +1,10 @@
 import express from 'express';
 import axios from 'axios';
+import { users } from './users.mjs'; // Import users from users.mjs
+
 const router = express.Router();
 
-let orders = [];
+export let orders = []; // Export orders
 let livePrice = 0;
 
 // Fetch live crypto price (used before placing orders)

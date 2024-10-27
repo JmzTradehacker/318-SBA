@@ -1,7 +1,7 @@
 import express from 'express';
 const router = express.Router();
 
-let users = [];
+export let users = []; // Exporting users
 
 // Create User
 router.post('/', (req, res) => {
