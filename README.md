@@ -10,7 +10,7 @@
 - Getting started is a breeze! Create an account, get a unique User ID, and you’re ready to dive into the world of trading.
 
 ### Live Crypto Price Data 📈
-- **Stay in the know** with real-time cryptocurrency prices! We pull live data straight from reliable sources like CoinGecko, CoinMarketCap, or Binance, so you’re always up-to-date on market movements.
+- **Stay in the know** with real-time cryptocurrency prices! We pull live data straight from reliable sources like CoinGecko, KuCoin, or Binance, so you’re always up-to-date on market movements.
 
 ### Trading Functionality 💰
 - **Buy and Sell with a Tap**: When you’re ready to trade, just hit that Buy or Sell button.
