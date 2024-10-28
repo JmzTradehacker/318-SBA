@@ -1,22 +1,24 @@
 import express from 'express';
 import axios from 'axios';
-import { users } from './users.mjs'; // Import users from users.mjs
+import { sUser } from './users.mjs';
 
 const router = express.Router();
 
 export let orders = []; // Export orders
+export let selectedTicker = 'BTC';
 let livePrice = 0;
 
+
 // Fetch live crypto price (used before placing orders)
-async function fetchLivePrice() {
-  const response = await axios.get('https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=BTC-USDT');
+async function fetchLivePrice(ticker = selectedTicker) {
+  const response = await axios.get(`https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=${ticker}-USDT`);
   return parseFloat(response.data.data.price);
 }
 
 // Fetch live price every x milliseconds
 setInterval(async () => {
     try {
-      livePrice = await fetchLivePrice();
+      livePrice = await fetchLivePrice(selectedTicker);
       //console.log("Price is live",  livePrice); //Use when needed
     } catch (error) {
       console.error("Error updating live price:", error.message);
@@ -24,27 +26,35 @@ setInterval(async () => {
   }, 1000); // x milliseconds
   
   // Route to get the current live price
-  router.get('/live-price', (req, res) => {
-    res.json({ livePrice });
+router.get('/live-price', (req, res) => {
+    res.json({ livePrice, selectedTicker });
+  });
+
+  // Route to set a new ticker
+router.post('/set-ticker', (req, res) => {
+    selectedTicker = req.body.ticker;
+    res.redirect('/');
   });
 
 // Place Buy or Sell Order
 router.post('/trade', async (req, res) => {
-  const { userId, orderType } = req.body;
-  const user = users.find(u => u.id == userId);
+  const { orderType } = req.body;
 
-  if (user) {
-    const livePrice = await fetchLivePrice();
+  if (sUser) {
+    const livePrice = await fetchLivePrice(selectedTicker);
     const newOrder = {
       id: orders.length + 1,
-      userId: user.id,
-      username: user.username,
+      userId: sUser.id,
+      username: sUser.username,
       orderType,
       price: livePrice,
+      ticker: selectedTicker,
       time: new Date().toLocaleTimeString(),
       status: 'Open'
     };
     orders.push(newOrder);
+  } else {
+    console.error("No user selected. Please select a user before placing a trade.");
   }
 
   res.redirect('/');
@@ -56,17 +66,17 @@ router.post('/close-order/:id', async (req, res) => {
   const order = orders.find(o => o.id == orderId);
 
   if (order && order.status === 'Open') {
-    const closePrice = await fetchLivePrice();
+    const closePrice = await fetchLivePrice(order.ticker);
     const priceMovement = closePrice - order.price;
-    const profitOrLoss = priceMovement > 0 ? `${priceMovement.toFixed(2)}` : `${priceMovement.toFixed(2)}`;
+    const profitOrLoss = priceMovement > 0 ? `-${priceMovement.toFixed(2)}` : `+${priceMovement.toFixed(2)}`;
 
-    order.status = 'Closed';
+    order.status = 'Closed $' + closePrice;
     order.closePrice = closePrice;               // Capture close price
     order.priceMovement = profitOrLoss;          // Record profit or loss with movement
     order.result = (order.orderType === 'BUY' && closePrice > order.price) || 
                    (order.orderType === 'SELL' && closePrice < order.price) 
-                   ? 'Profit: +' + profitOrLoss
-                   : 'Loss: -' + profitOrLoss;
+                   ? 'Profit: $' + profitOrLoss
+                   : 'Loss: $' + profitOrLoss;
   }
 
   res.redirect('/');

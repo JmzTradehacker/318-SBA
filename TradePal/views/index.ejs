@@ -7,7 +7,15 @@
   <link rel="stylesheet" href="./css/styles.css">
 </head>
 <body>
-  <h1>Live Bitcoin Price: $<span id="livePrice"><%= livePrice %></span></h1>
+    <div class="user-info">
+        <% if (sUser) { %>
+          <h2>Welcome, <%= sUser.username %> (ID: <%= sUser.id %>)</h2>
+        <% } else { %>
+          <h2>No User Selected</h2>
+        <% } %>
+      </div>
+    
+      <h1>Live <%= selectedTicker %> Price: $<span id="livePrice"><%= livePrice %></span></h1>
 
   <!-- User Form -->
   <h2>Create a New User</h2>
@@ -16,14 +24,18 @@
     <button type="submit">Create User</button>
   </form>
 
+  <h2>Select a Cryptocurrency Ticker</h2>
+  <form action="/trades/set-ticker" method="POST" id="tickerForm">
+    <select name="ticker" onchange="document.getElementById('tickerForm').submit()">
+      <option value="BTC" <% if (selectedTicker === 'BTC') { %>selected<% } %>>BTC</option>
+      <option value="ETH" <% if (selectedTicker === 'ETH') { %>selected<% } %>>ETH</option>
+      <option value="LTC" <% if (selectedTicker === 'LTC') { %>selected<% } %>>LTC</option>
+    </select>
+  </form>
+
   <!-- Trade Form -->
   <h2>Make a Trade</h2>
   <form action="/trades/trade" method="POST">
-    <select name="userId">
-      <% users.forEach(user => { %>
-        <option value="<%= user.id %>"><%= user.username %></option>
-      <% }) %>
-    </select>
     <button type="submit" name="orderType" value="BUY">Buy</button>
     <button type="submit" name="orderType" value="SELL">Sell</button>
   </form>
@@ -33,18 +45,23 @@
   <ul>
     <% orders.forEach(order => { %>
       <li>
-        User: <%= order.username %>, Type: <%= order.orderType %>, Price: $<%= order.price %>, Time: <%= order.time %>, Status: <%= order.status %>
+        <h3><%= order.username %></h3> <br>
+        <p class="">Ticker: <%= order.ticker %></p> 
+        <p class="">Type: <%= order.orderType %></p> 
+        <p class="">Price: $<%= order.price %></p>
+        <p class="">Time: <%= order.time %></p>
+        <p class="">Status: <%= order.status %></p>
         <% if (order.status === 'Open') { %>
           <form action="/trades/close-order/<%= order.id %>" method="POST">
             <button type="submit">Close Order</button>
           </form>
         <% } else { %>
-          - Result: <%= order.result %>
+           <p class="">Result: <%= order.result %></p>
         <% } %>
       </li>
     <% }) %>
   </ul>
-  
+
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         function updatePrice() {
@@ -55,7 +72,7 @@
               document.getElementById('livePrice').textContent = 
                 isNaN(livePrice) ? 'N/A' : livePrice.toFixed(2);
             })
-            .catch(error => console.error('Error fetching live price:', error));
+            .catch(error => console.error('Error fetching live price from inline script:', error));
         }
   
         setInterval(updatePrice, 1000);

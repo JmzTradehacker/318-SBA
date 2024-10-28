@@ -1,8 +1,8 @@
 import dotenv from 'dotenv/config';
 import express from 'express';
 import axios from 'axios';
-import usersRouter, { users } from './routes/users.mjs'; // Import users explicitly
-import tradesRouter, { orders } from './routes/trades.mjs'; // Import orders explicitly
+import usersRouter, { users, sUser } from './routes/users.mjs'; // Import users explicitly
+import tradesRouter, { orders, selectedTicker } from './routes/trades.mjs'; // Import orders explicitly
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,7 +25,7 @@ app.get('/', async (req, res) => {
     livePrice = response.data.data.price;
 
     // Render the view with live price, orders, and users
-    res.render('index', { livePrice, orders, users });
+    res.render('index', { livePrice, orders, users, sUser, selectedTicker});
   } catch (error) {
     console.error("Error fetching live price:", error.message);
     res.status(500).send("Seems like we messed up somewhere...");
