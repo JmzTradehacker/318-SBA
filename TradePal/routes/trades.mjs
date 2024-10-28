@@ -10,19 +10,23 @@ let livePrice = 0;
 // Fetch live crypto price (used before placing orders)
 async function fetchLivePrice() {
   const response = await axios.get('https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=BTC-USDT');
-  return response.data.data.price;
+  return parseFloat(response.data.data.price);
 }
 
-// Fetch live price for displaying on the homepage
-router.get('/live-price', async (req, res, next) => {
-  try {
-    livePrice = await fetchLivePrice();
+// Fetch live price every x milliseconds
+setInterval(async () => {
+    try {
+      livePrice = await fetchLivePrice();
+      //console.log("Price is live",  livePrice); //Use when needed
+    } catch (error) {
+      console.error("Error updating live price:", error.message);
+    }
+  }, 1000); // x milliseconds
+  
+  // Route to get the current live price
+  router.get('/live-price', (req, res) => {
     res.json({ livePrice });
-  } catch (error) {
-    console.error("Error fetching live price:", error);
-    next(error);
-  }
-});
+  });
 
 // Place Buy or Sell Order
 router.post('/trade', async (req, res) => {
@@ -38,7 +42,7 @@ router.post('/trade', async (req, res) => {
       orderType,
       price: livePrice,
       time: new Date().toLocaleTimeString(),
-      status: 'open'
+      status: 'Open'
     };
     orders.push(newOrder);
   }
@@ -51,12 +55,18 @@ router.post('/close-order/:id', async (req, res) => {
   const orderId = req.params.id;
   const order = orders.find(o => o.id == orderId);
 
-  if (order && order.status === 'open') {
-    const livePrice = await fetchLivePrice();
-    order.status = 'closed';
-    order.result = (order.orderType === 'buy' && livePrice > order.price) || 
-                   (order.orderType === 'sell' && livePrice < order.price) 
-                   ? 'Profit' : 'Loss';
+  if (order && order.status === 'Open') {
+    const closePrice = await fetchLivePrice();
+    const priceMovement = closePrice - order.price;
+    const profitOrLoss = priceMovement > 0 ? `${priceMovement.toFixed(2)}` : `${priceMovement.toFixed(2)}`;
+
+    order.status = 'Closed';
+    order.closePrice = closePrice;               // Capture close price
+    order.priceMovement = profitOrLoss;          // Record profit or loss with movement
+    order.result = (order.orderType === 'BUY' && closePrice > order.price) || 
+                   (order.orderType === 'SELL' && closePrice < order.price) 
+                   ? 'Profit: +' + profitOrLoss
+                   : 'Loss: -' + profitOrLoss;
   }
 
   res.redirect('/');
