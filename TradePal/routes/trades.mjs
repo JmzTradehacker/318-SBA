@@ -1,6 +1,7 @@
 import express from 'express';
 import axios from 'axios';
 import { sUser } from './users.mjs';
+import { renderError, logError, handleMissingUser, handleLivePriceError } from '../errorHandling/errors.mjs';
 
 const router = express.Router();
 
@@ -11,9 +12,15 @@ let livePrice = 0;
 
 // Fetch live crypto price (used before placing orders)
 async function fetchLivePrice(ticker = selectedTicker) {
-  const response = await axios.get(`https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=${ticker}-USDT`);
-  return parseFloat(response.data.data.price);
+    try {
+        const response = await axios.get(`https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=${ticker}-USDT`);
+        return parseFloat(response.data.data.price);
+      } catch (error) {
+        logError(`Error fetching price for ${ticker}:`, error.message);
+        return null;
+      }
 }
+
 
 // Fetch live price every x milliseconds
 setInterval(async () => {
@@ -21,7 +28,7 @@ setInterval(async () => {
       livePrice = await fetchLivePrice(selectedTicker);
       //console.log("Price is live",  livePrice); //Use when needed
     } catch (error) {
-      console.error("Error updating live price:", error.message);
+      logError("Error updating live price:", error.message);
     }
   }, 1000); // x milliseconds
   
@@ -41,21 +48,25 @@ router.post('/trade', async (req, res) => {
   const { orderType } = req.body;
 
   if (sUser) {
-    const livePrice = await fetchLivePrice(selectedTicker);
-    const newOrder = {
-      id: orders.length + 1,
-      userId: sUser.id,
-      username: sUser.username,
-      orderType,
-      price: livePrice,
-      ticker: selectedTicker,
-      time: new Date().toLocaleTimeString(),
-      status: 'Open'
-    };
-    orders.push(newOrder);
-  } else {
-    console.error("No user selected. Please select a user before placing a trade.");
-  }
+        const livePrice = await fetchLivePrice(selectedTicker);
+        if (livePrice !== null) {
+            const newOrder = {
+            id: orders.length + 1,
+            userId: sUser.id,
+            username: sUser.username,
+            orderType,
+            price: livePrice,
+            ticker: selectedTicker,
+            time: new Date().toLocaleTimeString(),
+            status: 'Open'
+            };
+            orders.push(newOrder);
+        } else {
+            handleLivePriceError(res, selectedTicker, { livePrice, orders, selectedTicker, sUser });
+            return;}
+    } else {
+        handleMissingUser(res, { livePrice, orders, selectedTicker });
+        return;}
 
   res.redirect('/');
 });
@@ -67,17 +78,20 @@ router.post('/close-order/:id', async (req, res) => {
 
   if (order && order.status === 'Open') {
     const closePrice = await fetchLivePrice(order.ticker);
-    const priceMovement = closePrice - order.price;
-    const profitOrLoss = priceMovement > 0 ? `-${priceMovement.toFixed(2)}` : `+${priceMovement.toFixed(2)}`;
+    if (closePrice !== null) {
+        const priceMovement = closePrice - order.price;
+        const profitOrLoss = priceMovement > 0 ? `${priceMovement.toFixed(2)}` : `${priceMovement.toFixed(2)}`;
 
-    order.status = 'Closed $' + closePrice;
-    order.closePrice = closePrice;               // Capture close price
-    order.priceMovement = profitOrLoss;          // Record profit or loss with movement
-    order.result = (order.orderType === 'BUY' && closePrice > order.price) || 
-                   (order.orderType === 'SELL' && closePrice < order.price) 
-                   ? 'Profit: $' + profitOrLoss
-                   : 'Loss: $' + profitOrLoss;
-  }
+        order.status = 'Closed $' + closePrice;
+        order.closePrice = closePrice;               // Capture close price
+        order.priceMovement = profitOrLoss;          // Record profit or loss with movement
+        order.result = (order.orderType === 'BUY' && closePrice > order.price) || 
+                    (order.orderType === 'SELL' && closePrice < order.price) 
+                    ? 'Profit: +$' + profitOrLoss
+                    : 'Loss: -$' + profitOrLoss;
+    } else {
+        handleLivePriceError(res, order.ticker, { livePrice, orders, selectedTicker, sUser });
+        return;}}
 
   res.redirect('/');
 });

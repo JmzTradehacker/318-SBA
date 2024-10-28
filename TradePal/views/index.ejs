@@ -4,9 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crypto Trading App</title>
-  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
+
+    <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+        <div class="error-message">
+          <p><%= errorMessage %></p>
+        </div>
+      <% } %>
+
     <div class="user-info">
         <% if (sUser) { %>
           <h2>Welcome, <%= sUser.username %> (ID: <%= sUser.id %>)</h2>
@@ -44,19 +51,21 @@
   <h2>Open Orders</h2>
   <ul>
     <% orders.forEach(order => { %>
-      <li>
-        <h3><%= order.username %></h3> <br>
-        <p class="">Ticker: <%= order.ticker %></p> 
-        <p class="">Type: <%= order.orderType %></p> 
-        <p class="">Price: $<%= order.price %></p>
-        <p class="">Time: <%= order.time %></p>
-        <p class="">Status: <%= order.status %></p>
+      <li class="order-details">
+        <h3><%= order.username %></h3>
+        <div class="info">
+            <span>Ticker: <%= order.ticker %></p> 
+            <span>Type: <%= order.orderType %></p> 
+            <span>Price: $<%= order.price %></p>
+            <span>Time: <%= order.time %></p>
+            <span class="order-open">Status: <%= order.status %></span>
+        </div>
         <% if (order.status === 'Open') { %>
           <form action="/trades/close-order/<%= order.id %>" method="POST">
             <button type="submit">Close Order</button>
           </form>
         <% } else { %>
-           <p class="">Result: <%= order.result %></p>
+           <span class="<%= order.result.includes('Profit') ? 'order-profit' : 'order-loss' %>"> Result: <%= order.result %><span>
         <% } %>
       </li>
     <% }) %>

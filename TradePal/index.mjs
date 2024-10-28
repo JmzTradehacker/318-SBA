@@ -1,8 +1,9 @@
 import dotenv from 'dotenv/config';
 import express from 'express';
 import axios from 'axios';
-import usersRouter, { users, sUser } from './routes/users.mjs'; // Import users explicitly
-import tradesRouter, { orders, selectedTicker } from './routes/trades.mjs'; // Import orders explicitly
+import usersRouter, { users, sUser } from './routes/users.mjs'; 
+import tradesRouter, { orders, selectedTicker } from './routes/trades.mjs';
+import { handleServerError } from './errorHandling/errors.mjs';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,17 +26,18 @@ app.get('/', async (req, res) => {
     livePrice = response.data.data.price;
 
     // Render the view with live price, orders, and users
-    res.render('index', { livePrice, orders, users, sUser, selectedTicker});
+    res.render('index', { livePrice, orders, users, sUser: sUser || null, selectedTicker, errorMessage: null });
   } catch (error) {
     console.error("Error fetching live price:", error.message);
-    res.status(500).send("Seems like we messed up somewhere...");
+    handleServerError(res, "Failed to load homepage.", {
+      orders, users, selectedTicker, sUser, livePrice: 0
+    });
   }
 });
 
 // Global error handling
 app.use((err, req, res, next) => {
-  console.error("Global error:", err.stack);
-  res.status(500).send("Seems like we messed up somewhere...");
+  handleServerError(res, err.message);
 });
 
 // Start the server
